@@ -26,6 +26,7 @@ class Calendar:
         cursor = db.events.find()
         new_events = {}
         async for event in cursor:
+            logger.debug('Create event %s', event)
             new_events[event['_id']] = Event(
                 start=event['start'],
                 end=event['end'],
