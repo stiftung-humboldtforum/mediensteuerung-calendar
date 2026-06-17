@@ -19,21 +19,20 @@ async def main(ca_certificate, client_certificate, client_key):
     loop = asyncio.get_event_loop()
     async with Client(
             os.environ['MQTT_HOSTNAME'],
-            client_id='calendar',
+            identifier='calendar',
             port=8883,
             keepalive=60,
             tls_context=ssl_context,
-            max_concurrent_outgoing_calls=2000
+            max_concurrent_outgoing_calls=2000,
     ) as client:
         calendar = Calendar(client)
         await calendar.load_events()
         calendar_task = loop.create_task(calendar.start())
         client.pending_calls_threshold = 500
         await client.subscribe('api/calendar/update')
-        async with client.messages() as messages:
-            async for message in messages:
-                if message.topic.matches('api/calendar/update'):
-                    await calendar.load_events()
+        async for message in client.messages:
+            if message.topic.matches('api/calendar/update'):
+                await calendar.load_events()
     await calendar_task
 
 
