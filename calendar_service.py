@@ -55,12 +55,18 @@ class Calendar:
     async def tick(self):
         now = localizer.localize(datetime.now())
         for event in self.events.values():
-            event.update(now=now)
+            # One malformed event must not kill the whole 5s evaluation loop.
+            try:
+                event.update(now=now)
+            except Exception as e:
+                logger.exception(e)
 
     async def start(self):
         while True:
             await self.tick()
             await asyncio.sleep(5)
+            # FIFO: preserve the order edges were produced (pop() drained LIFO,
+            # reordering start/end within a tick).
             for _ in range(len(self.message_queue)):
-                message = self.message_queue.pop()
+                message = self.message_queue.pop(0)
                 await self.client.publish(*message, qos=1)

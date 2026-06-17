@@ -48,7 +48,9 @@ class Event:
         if duration is None:
             self.duration = relativedelta(self.end, self.start)
         else:
-            self.duration = relativedelta(seconds=int(duration / 1000))
+            # duration is in ms; keep sub-second precision (don't truncate to
+            # whole seconds, which made events <1s never fire)
+            self.duration = relativedelta(microseconds=int(duration * 1000))
         self.type = type
         self.id = id
         self.actions = actions
@@ -71,18 +73,18 @@ class Event:
     def update(self, now: datetime):
         start = self.start.replace(tzinfo=now.tzinfo)
         end = self.end.replace(tzinfo=now.tzinfo)
-        if now > self.start and now < end:
+        if now > start and now < end:
             self.is_happening = True
             return
         elif self.rrule is not None:
             today = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            if (start - self.duration).day != start.day:
-                today -= relativedelta(start, start - self.duration)
+            # If the event crosses midnight (it ENDS on the following day), look
+            # back by its duration so rrule.after(today) still catches an
+            # occurrence that started yesterday and is still in progress.
+            if (start + self.duration).day != start.day:
+                today -= self.duration
             if occurrence := self.rrule.after(today):
                 end = occurrence + self.duration
-                if self.id == 72:
-                    logger.info('%s %s\n%s\n%s\n%s', now > occurrence,
-                                now < end, now, occurrence, end)
                 if now > occurrence and now < end:
                     self.is_happening = True
                     return
