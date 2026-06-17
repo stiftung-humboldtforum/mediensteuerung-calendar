@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir --upgrade \
 	paho-mqtt==2.1.0 \
 	python-dateutil==2.9.0.post0 \
 	pytz==2026.2 \
-	motor==3.7.0
+	pymongo==4.17.0
