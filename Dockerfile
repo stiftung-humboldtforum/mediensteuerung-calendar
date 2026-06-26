@@ -1,10 +1,8 @@
 FROM python:3.12-slim
 RUN pip install --no-cache-dir --upgrade pip
 
-RUN pip install --no-cache-dir --upgrade \
-	asyncclick==8.3.0.7 \
-	aiomqtt==2.5.1 \
-	paho-mqtt==2.1.0 \
-	python-dateutil==2.9.0.post0 \
-	pytz==2026.2 \
-	pymongo==4.17.0
+# Fully-pinned + hashed deps (generated from requirements.in via `uv pip compile
+# --universal --generate-hashes`); --require-hashes makes the build fail on any
+# drift or tampering.
+COPY requirements.txt .
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
