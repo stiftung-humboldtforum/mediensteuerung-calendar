@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir --upgrade \
 	aiomqtt==1.1.0 \
 	python-dateutil==2.8.2 \
 	pytz==2023.3.post1 \
-	motor==3.3.1
+	motor==3.7.0

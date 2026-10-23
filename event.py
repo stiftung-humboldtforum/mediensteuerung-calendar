@@ -37,7 +37,12 @@ class Event:
         self.end = parser.parse(end)
         self.allDay = allDay
         if rrule is not None:
-            self.rrule = dateutil.rrule.rrulestr(rrule)
+            values = rrule.split(';')
+            for i, value in enumerate(values):
+                if value.startswith('UNTIL') and not value.endswith('Z'):
+                    logger.debug('Hotfix UTC UNTIL')
+                    values[i] = value + 'Z'
+            self.rrule = dateutil.rrule.rrulestr(';'.join(values))
         else:
             self.rrule = None
         if duration is None:
