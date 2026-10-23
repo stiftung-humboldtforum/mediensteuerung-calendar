@@ -2,5 +2,5 @@ asyncclick==8.4.2.1
 aiomqtt==2.5.1
 paho-mqtt==2.1.0
 python-dateutil==2.9.0.post0
-pytz==2026.3.post1
-pymongo==4.17.0
+pytz==2026.5
+pymongo==4.19.0
