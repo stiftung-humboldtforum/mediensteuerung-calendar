@@ -77,17 +77,12 @@ class Event:
             self.is_happening = True
             return
         elif self.rrule is not None:
-            today = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            # If the event crosses midnight (it ENDS on the following day), look
-            # back by its duration so rrule.after(today) still catches an
-            # occurrence that started yesterday and is still in progress.
-            if (start + self.duration).day != start.day:
-                today -= self.duration
-            if occurrence := self.rrule.after(today):
-                end = occurrence + self.duration
-                if now > occurrence and now < end:
-                    self.is_happening = True
-                    return
+            # Latest occurrence that has begun: covers series crossing midnight,
+            # series starting exactly at 00:00 and several occurrences per day.
+            occurrence = self.rrule.before(now, inc=True)
+            if occurrence is not None and now < occurrence + self.duration:
+                self.is_happening = True
+                return
         self.is_happening = False
 
     def set_options(self, event: 'Event'):
